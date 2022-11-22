@@ -76,10 +76,12 @@ fig, ax = plt.subplots(figsize=(7, 13))
 graph = sns.barplot(x=veg_per_capita.values, y=veg_per_capita.index, orient='h', ax=ax)
 graph.set(title='Number of vegetarian-friendly restaurants per state, per capita (1,000 people)')
 ```
+  
 Disregarding Washington DC, the state with the highest per-capita amount of vegetarian-friendly restaurants is Hawaii, with one such business per 2,000 people. Mississippi, in last place, has a dearth of vegetarian options with only one to every 22,200 people. However, it's important to note that HappyCow's data is user-provided; it's entirely possible that states such as OK, KY, and MS simply may not have many people who know about their website, and thus few submissions.  
 Before testing these figures against several demographic variables, we can also see a pattern in an initial geographic map, as shown below.
 
 ![vegetarian restaurants by state](images/Dashboard 1.png)
+  
 It's now clear that eating out as a vegetarian or vegan is not as easy in the American Midwest than as it is on either coast. However, it's worth exploring just what characteristics of different states, such as wealth and political beliefs, may be contributing the most to this contrast.
 
 ### Exploring the relationship between the number of vegetarian restaurants and demographic variables  
@@ -136,12 +138,103 @@ plt.show()
   
 The relationship between political party and the number of vegetarian-friendly restaurants has a low-to-moderate *r* of 0.487. It's likely that we can disregard this variable.
 
+### Variable 2: Race
+```{python}
+race = pd.read_csv("C:/Users/Noah/Coding/food_study/data/clean_data/race_by_state_2018.csv")
+race.rename(columns={'Location': 'state'})
+race.head()
+```
 
-income data is not adjusted for inflation!!
+```{python}
+# combine restaurant and race data
+raceFull = pd.DataFrame({'restaurants_per_capita': veg2.values, 'percent_white': race.White})
+raceFull.index = veg2.index
+raceFull.head()
+```
 
-demographics of democrats v republicans
+```{python}
+fig, ax = plt.subplots(figsize=(7, 6))
+sns.regplot(data=raceFull, 
+    x='percent_white', 
+    y='restaurants_per_capita').set(
+        xlabel='% of White Population', 
+        ylabel='Number of Restaurants', 
+        title='Number of Vegetarian-Friendly Restaurants (per 1,000 People) to State % of White Population')
+
+# calculate pearson correlation coefficient
+r, p = pearsonr(x=raceFull['percent_white'], y=raceFull['restaurants_per_capita'])
+# include values as annotations
+ax.text(0.4, 0.32, 'r = {:.3f}'.format(r))
+
+plt.show()
+```
+
+There is a negative, albeit nearly non-existent, relationship between a state's white population percentage and its number of vegetarian-friendly restaurants. Much of the *r* of -0.14 is due to data from Hawaii, a state which is mostly composed of people of color and is also the leading state in terms of accommodating vegetarians and vegans. Compared to traditional American food, vegetarian dishes are much easier to find in the cuisine of various Asian cultures; with such a high Asian population (38%), this may be what's at play in Hawaii. Aside from that, race seems to be insignificant.
+
+### Variable 3: Income
+```{python}
+# load data for each state's average yearly income
+income = pd.read_excel("C:/Users/Noah/Coding/food_study/data/clean_data/state_income_2018.xlsx", engine='openpyxl')
+income.columns = ['state', 'income']
+income.head()
+```
+
+```{python}
+# combine data
+veg_per_capita = veg_per_capita.sort_index(0, False)
+    # use the data that has D.C. in it, since the income data does too
+incomeFull = pd.DataFrame({'num_of_restaurants': veg_per_capita.values, 'income': income.income})
+incomeFull.index = veg_per_capita.index
+incomeFull.head()
+```
+
+```{python}
+fig, ax = plt.subplots(figsize=(7, 6))
+sns.regplot(data=incomeFull, 
+    x='income', 
+    y='num_of_restaurants').set(
+        xlabel='Average Yearly Income($)', 
+        ylabel='Number of Restaurants', 
+        title='Number of Vegetarian-Friendly Restaurants (per 1,000 People) to State Average Annual Income')
+
+# calculate pearson correlation coefficient
+r, p = pearsonr(x=incomeFull['income'], y=incomeFull['num_of_restaurants'])
+# include value as annotations
+ax.annotate('r = {:.3f}'.format(r), xy=(0.25, 0.45), xycoords='figure fraction')
+
+plt.show()
+```
+(Note: This 2018 income data has not been adjusted for inflation.)  
+Here we see the strongest relationship of all: an *r* of 0.578, meaning there is a moderate relationship between the average yearly income and number of vegetarian-friendly restaurants of a given state.  
+There are many sub-variables resulting from having a higher income that must be contributing to this. For example, a guess as to why fewer people with a lower income are likely to become vegetarians in the first place would be that working class people have less time to cook their own food; a single, working mother may find it much more difficult than I did to take the time to learn new, vegetarian recipes for her picky children. Additionally, those with less income may have less access to pricier grocery stores that provide more vegetarian ingredients and alternatives, such as Sprouts and Whole Foods. If an area has fewer vegetarians, it would make sense that the lower demand would result in fewer vegetarian restaurants popping up.
+
+### Variable 4: Population
+```{python}
+popFull = pd.DataFrame({'restaurants_per_capita': veg_per_capita.values, 'population': statepop.population})
+# incomeFull.index = veg_per_capita.index
+popFull.head()
+```
+```{python}
+fig, ax = plt.subplots(figsize=(7, 6))
+sns.regplot(data=popFull, 
+    x='population', 
+    y='restaurants_per_capita').set(
+        xlabel='State Population', 
+        ylabel='Number of Restaurants', 
+        title='Number of Vegetarian-Friendly Restaurants (per 1,000 People) to State Population')
+
+# calculate pearson correlation coefficient
+r, p = pearsonr(x=popFull['population'], y=popFull['restaurants_per_capita'])
+# include value as annotations
+ax.annotate('r = {:.3f}'.format(r), xy=(0.35, 0.55), xycoords='figure fraction')
+
+plt.show()
+```
+  
+The correlation between a state's population and its per-capita number of vegetarian-friendly restaurants is nearly nonexistent. This variable can be disregarded.
+
+## Conclusion
+
+
 
 A major caveat is also the fact that the webscraped data wasn't collected in the same year as the other datasets -- This data includes, for example, many fast food restaurants which have only introduced vegetarian/vegan options in recent years since the other data was collected.
-
-Didn't take into consideration family size, relationship status, disability, etc.  
-For example, a single, working mother of four picky children would not have as easy of a time going vegetarian as I did.
