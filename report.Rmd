@@ -2,9 +2,7 @@
 title: "What Parts of the United States are the Most Vegetarian- and Vegan-Friendly?"
 author: "Noah O'Neill"
 date: "October 2022"
-output:
-  prettydoc::html_pretty:
-    theme: cayman
+output: html_document
 ---
 
 ## Introduction
@@ -115,11 +113,12 @@ partyFull = pd.DataFrame({'restaurants_per_capita': veg2.values, 'percent_democr
         index=veg2.index)
 partyFull.head()
 ```
+  
 ```{python}
 # THERES SOMETHING WRONG WITH THIS CHUNK HAVE FUN SOLVING IT LOL
 # create scatterplot with the two variables of interest
 fig, ax = plt.subplots(figsize=(7, 6))
-sns.regplot(partyFull, 
+sns.regplot(data=partyFull, 
     x='percent_democrat', 
     y='restaurants_per_capita').set(
         xlabel='% of Democrats', 
@@ -134,6 +133,7 @@ ax.text(.45, 0.33, 'r = {:.3f}'.format(r))
 
 plt.show()
 ```
+  
 The relationship between political party and the number of vegetarian-friendly restaurants has a low-to-moderate *r* of 0.487. It's likely that we can disregard this variable.
 
 
