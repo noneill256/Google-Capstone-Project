@@ -27,7 +27,7 @@ for i in range(61): # looping through every div containing the number of restaur
     num = (driver.find_element(By.XPATH, num_xpath)).text
     state = (driver.find_element(By.XPATH, state_xpath)).text
     
-    if num: # if the div doesn't return empy values
+    if num: # if the div doesn't return empty values
         num_of_restaurants.append(int(num[1:-1]))
     if state:
         states.append(state)
