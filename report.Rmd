@@ -2,15 +2,15 @@
 title: "What Parts of the United States are the Most Vegetarian- and Vegan-Friendly?"
 author: "Noah O'Neill"
 date: "October 2022"
-output: html_document
+output: 
+  prettydoc::html_pretty:
+    theme: cayman
 ---
 
 ## Introduction
 In 2022 I made the decision to become a vegetarian, while also putting in extra effort to cook almost exclusively vegan meals at home. A common topic of debate in the vegan community is whether or not it is easier for certain communities to adopt healthy and plant-based diets than it is for others. Personally, I think the answer to this question is a no-brainer, but nonetheless would like to explore it with data.  
 
-!! talk about the importance and benefits of a veg lifestyle
-While a vegetarian or vegan diet isn’t for everyone, the reduction of human consumption of meat for nutritionally equal or healthier plant-based alternatives has been shown to be beneficial on multiple levels. Farming for animal products is one of the world’s biggest contributors to climate change. (water use, land use)
-On an individual level, reducing the amount of meat one eats (while, again, still taking care to keep a well-balanced diet) has repeatedly been shown  
+While a vegetarian or vegan diet isn’t for everyone, the reduction of human consumption of meat for nutritionally equal or healthier plant-based alternatives has been shown to be beneficial on multiple levels. Farming for animal products is one of the world’s biggest contributors to climate change, with [70% of freshwater use and 77% of land use being used for maintaining and feeding livestock.](https://ourworldindata.org/environmental-impacts-of-food) On an individual level, there is some evidence that reducing the amount of meat one eats (while, again, still taking care to keep a well-balanced diet) [can lower the risk of certain health conditions like heart disease](https://www.bmj.com/content/366/bmj.l4897).  
 
 There are many factors to consider when it comes to transitioning to a new diet, but for this study I will be judging how easy it is to be a vegetarian or vegan based on how many restaurants with vegetarian or vegan options are available, as this data is easy to access and eating out at restaurants that often will not accommodate your dietary restrictions is one of the most difficult parts of having a plant-based diet.  
 
@@ -22,7 +22,7 @@ There are more meat-free and plant-based dining options in areas with high level
 
 ## Preparation
 The primary dataset I'll be using is a table containing the amount of vegetarian- and vegan-friendly restaurants per state. By vegetarian/vegan-friendly, I refer to restaurants that provide food that is meat- or animal-product-free on their menus. This data was scraped from the website HappyCow, an online directory of such restaurants, and was the most accurate I could find.
-Most of the sets containing the demographic data I'll be using are sourced from the U.S. Census Bureau; for consistency, this data was also collected in 2018. The additional data on political party preference was collected in 2018 by Gallup.
+Most of the sets containing the demographic data I'll be using are sourced from the U.S. Census Bureau; for consistency, all of this government data was collected in 2018. The additional data on political party preference was collected in 2018 by Gallup.
  
 The tools I will be using are:  
   
@@ -34,10 +34,10 @@ The tools I will be using are:
 
 
 ## Processing and Cleaning Data
-The collected Happy Cow data was simple and straightfoward, and thus did not require any major cleaning. I also originally used SQL to process a dataset of fast food restaurants, but tossed this set after realizing it doesn't contribute to answering the question at hand.
+The collected Happy Cow data was simple and straightforward, and thus did not require any major cleaning. I also originally used SQL to process a dataset of fast food restaurants, but tossed this set after realizing it doesn't contribute to answering the question at hand.
 
 ## Analysis
-From here I begun my exploratory data analysis.
+From here I began my exploratory data analysis.
 ```{python}
 # Loading the necessary packages
 import numpy as np
@@ -72,15 +72,18 @@ veg_per_capita = veg_per_capita.sort_index(0, False)
 veg_per_capita = veg_per_capita.sort_values(0, False)
 ```
 ```{python}
-fig, ax = plt.subplots(figsize=(7, 13))
+fig, ax = plt.subplots(figsize=(12, 15))
 graph = sns.barplot(x=veg_per_capita.values, y=veg_per_capita.index, orient='h', ax=ax)
-graph.set(title='Number of vegetarian-friendly restaurants per state, per capita (1,000 people)')
+graph.set(xlabel = 'Restaurants per 1,000 people',
+          ylabel= 'State',
+          title='Number of vegetarian-friendly restaurants per state, per capita (1,000 people)')
 ```
   
 Disregarding Washington DC, the state with the highest per-capita amount of vegetarian-friendly restaurants is Hawaii, with one such business per 2,000 people. Mississippi, in last place, has a dearth of vegetarian options with only one to every 22,200 people. However, it's important to note that HappyCow's data is user-provided; it's entirely possible that states such as OK, KY, and MS simply may not have many people who know about their website, and thus few submissions.  
+  
 Before testing these figures against several demographic variables, we can also see a pattern in an initial geographic map, as shown below.
 
-![vegetarian restaurants by state](images/Dashboard 1.png)
+![ ](images/Dashboard 1.png)
   
 It's now clear that eating out as a vegetarian or vegan is not as easy in the American Midwest than as it is on either coast. However, it's worth exploring just what characteristics of different states, such as wealth and political beliefs, may be contributing the most to this contrast.
 
@@ -104,7 +107,7 @@ dem.index = party['State']
 demPerc = dem.divide(partyTotal)
 demPerc.head()
 ```
-```{python}
+```{python results='hide'}
 # Removing DC from vegetarian data, since it's not in political data
 veg2 = veg_per_capita.drop(labels='District of Columbia',
         axis=0, inplace=False)
@@ -117,7 +120,6 @@ partyFull.head()
 ```
   
 ```{python}
-# THERES SOMETHING WRONG WITH THIS CHUNK HAVE FUN SOLVING IT LOL
 # create scatterplot with the two variables of interest
 fig, ax = plt.subplots(figsize=(7, 6))
 sns.regplot(data=partyFull, 
@@ -125,23 +127,24 @@ sns.regplot(data=partyFull,
     y='restaurants_per_capita').set(
         xlabel='% of Democrats', 
         ylabel='Number of Restaurants', 
-        title='Number of Vegetarian-Friendly Restaurants (per 1,000 People) to State % of Self-Identified Democrats')
+        title='Number of Vegetarian-Friendly Restaurants (per 1,000 People) \nto State % of Self-Identified Democrats')
 
 
 # calculate pearson correlation coefficient
 r, p = pearsonr(x=partyFull['percent_democrat'], y=partyFull['restaurants_per_capita'])
 # include values as annotations
-ax.text(.45, 0.33, 'r = {:.3f}'.format(r))
+ax.annotate('r = {:.3f}'.format(r), xy=(0.45, 0.55), xycoords='figure fraction')
+ax.annotate('p = {:.3f}'.format(p), xy=(0.45, 0.50), xycoords='figure fraction')
 
 plt.show()
 ```
   
-The relationship between political party and the number of vegetarian-friendly restaurants has a low-to-moderate *r* of 0.487. It's likely that we can disregard this variable.
+The relationship between political party and the number of vegetarian-friendly restaurants has a low-to-moderate *r* of 0.487. With its nearly-zero p-value indicating the statistical significance of this result, we can confidently conclude that there is a weak relationship between these two variables, and that we can disregard political party as a factor.
 
 ### Variable 2: Race
 ```{python}
 race = pd.read_csv("C:/Users/Noah/Coding/food_study/data/clean_data/race_by_state_2018.csv")
-race.rename(columns={'Location': 'state'})
+race = race.rename(columns={'Location': 'state'})
 race.head()
 ```
 
@@ -164,12 +167,13 @@ sns.regplot(data=raceFull,
 # calculate pearson correlation coefficient
 r, p = pearsonr(x=raceFull['percent_white'], y=raceFull['restaurants_per_capita'])
 # include values as annotations
-ax.text(0.4, 0.32, 'r = {:.3f}'.format(r))
+ax.annotate('r = {:.3f}'.format(r), xy=(0.38, 0.55), xycoords='figure fraction')
+ax.annotate('p = {:.3f}'.format(p), xy=(0.38, 0.50), xycoords='figure fraction')
 
 plt.show()
 ```
 
-There is a negative, albeit nearly non-existent, relationship between a state's white population percentage and its number of vegetarian-friendly restaurants. Much of the *r* of -0.14 is due to data from Hawaii, a state which is mostly composed of people of color and is also the leading state in terms of accommodating vegetarians and vegans. Compared to traditional American food, vegetarian dishes are much easier to find in the cuisine of various Asian cultures; with such a high Asian population (38%), this may be what's at play in Hawaii. Aside from that, race seems to be insignificant.
+There is a negative, albeit nearly non-existent, relationship between a state's white population percentage and its number of vegetarian-friendly restaurants. However, the rather high p-value suggests that there is not much of a linear relationship here at all. Much of the negative nature of *r* is due to data from Hawaii, a state which is mostly composed of people of color and is also the leading state in terms of accommodating vegetarians and vegans. Compared to traditional American food, vegetarian dishes are much easier to find in the cuisine of various Asian cultures; with such a high Asian population (38%), this may be what's at play in Hawaii. Aside from that, race seems to be insignificant.
 
 ### Variable 3: Income
 ```{python}
@@ -179,7 +183,7 @@ income.columns = ['state', 'income']
 income.head()
 ```
 
-```{python}
+```{python warnings=FALSE}
 # combine data
 veg_per_capita = veg_per_capita.sort_index(0, False)
     # use the data that has D.C. in it, since the income data does too
@@ -200,12 +204,14 @@ sns.regplot(data=incomeFull,
 # calculate pearson correlation coefficient
 r, p = pearsonr(x=incomeFull['income'], y=incomeFull['num_of_restaurants'])
 # include value as annotations
-ax.annotate('r = {:.3f}'.format(r), xy=(0.25, 0.45), xycoords='figure fraction')
+ax.annotate('r = {:.3f}'.format(r), xy=(0.23, 0.45), xycoords='figure fraction')
+ax.annotate('p = {:.3f}'.format(p), xy=(0.227, 0.41), xycoords='figure fraction')
 
 plt.show()
 ```
+    
 (Note: This 2018 income data has not been adjusted for inflation.)  
-Here we see the strongest relationship of all: an *r* of 0.578, meaning there is a moderate relationship between the average yearly income and number of vegetarian-friendly restaurants of a given state.  
+Here we see the strongest relationship of all: an *r* of 0.578, meaning there is a moderate relationship between the average yearly income and number of vegetarian-friendly restaurants of a given state. The very low p-value of nearly 0 indicates that these results are indeed significant.  
 There are many sub-variables resulting from having a higher income that must be contributing to this. For example, a guess as to why fewer people with a lower income are likely to become vegetarians in the first place would be that working class people have less time to cook their own food; a single, working mother may find it much more difficult than I did to take the time to learn new, vegetarian recipes for her picky children. Additionally, those with less income may have less access to pricier grocery stores that provide more vegetarian ingredients and alternatives, such as Sprouts and Whole Foods. If an area has fewer vegetarians, it would make sense that the lower demand would result in fewer vegetarian restaurants popping up.
 
 ### Variable 4: Population
@@ -227,14 +233,18 @@ sns.regplot(data=popFull,
 r, p = pearsonr(x=popFull['population'], y=popFull['restaurants_per_capita'])
 # include value as annotations
 ax.annotate('r = {:.3f}'.format(r), xy=(0.35, 0.55), xycoords='figure fraction')
+ax.annotate('p = {:.3f}'.format(p), xy=(0.35, 0.50), xycoords='figure fraction')
 
 plt.show()
 ```
   
-The correlation between a state's population and its per-capita number of vegetarian-friendly restaurants is nearly nonexistent. This variable can be disregarded.
+The correlation between a state's population and its per-capita number of vegetarian-friendly restaurants is nearly nonexistent. This, combined with the p-value of 0.313, indicates that this variable can be disregarded.
 
-## Conclusion
+## Conclusions
+The only one of these tests that suggested a relationship between a demographic variable and the number of restaurants with vegetarian/vegan restaurants in a state was that which was run on state average income, confirming one of my hypotheses. If one wants to live in an area that provides a relative abundance of plant-based and meat-free options, they'd be best off relocating to a more financially affluent state. The problematic nature of this conclusion is obvious -- maintaining a vegetarian or vegan diet will be easier for those who can actually afford to live in these expensive areas.  
 
+My other hypothesis, however -- that states with higher populations would have more restaurants with vegetarian/vegan options -- was proven incorrect. That said, I think this ties into a major weakness in this study, which is just how much variables like income and population can vary in one state from city to city. Thus I believe a similar project done exactly the same but with data from counties or cities instead of states could have provided more illuminating insights. 
 
+Another major caveat is the fact that the webscraped HappyCow data wasn't collected in the same year as the other datasets -- This data includes, for example, many fast food restaurants which have only introduced vegetarian/vegan options in recent years since the other data was collected. This is a trend which will make it much easier for vegetarians and vegans to eat out across the country; but, with these restaurants only providing often unhealthy fast food, there are still improvements to be made.  
 
-A major caveat is also the fact that the webscraped data wasn't collected in the same year as the other datasets -- This data includes, for example, many fast food restaurants which have only introduced vegetarian/vegan options in recent years since the other data was collected.
+It's difficult to say exactly what the solution to these differences in access based on class is. Whatever actions one feels should be taken, such as education and resources on how to cook vegetarian dishes (especially for owners of restaurants), any move towards accessibility of these cuisines will undoubtedly be a net positive -- both for the health of our country's people and our environment.  
