@@ -10,6 +10,10 @@ There are many factors to consider when it comes to transitioning to a new diet,
 There are more meat-free and plant-based dining options in areas with high levels of income, as well as those with larger populations.
 
 ### Methods and Technologies Used
-  
+- Data Scraping: Python with Selenium
+- Cleaning: PostgreSQL/PGAd4min4, Microsoft Excel
+- Exploration/Analysis: Python with numpy, pandas, and scipy
+- Visualization: Python with Seaborn, Tableau
+- Final report: rmarkdown
   
 WIP :-)
