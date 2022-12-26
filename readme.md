@@ -13,6 +13,7 @@ There are more meat-free and plant-based dining options in areas with high level
 - Data Scraping: Python with Selenium
 - Cleaning: PostgreSQL/PGAd4min4, Microsoft Excel
 - Exploration/Analysis: Python with numpy, pandas, and scipy
+   - hee
 - Visualization: Python with Seaborn, Tableau
 - Final report: rmarkdown
   
